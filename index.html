@@ -1,90 +1,163 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	<script src="https://analytics.ahrefs.com/analytics.js" data-key="ZNdbDuS3Y05VotgpMcSJVA" async></script>
-	<script>
-(function (m, a, z, e) {
-  var s, t, u, v;
-  try {
-    t = m.sessionStorage.getItem('maze-us');
-  } catch (err) {}
+  <meta charset="UTF-8">
+  <title>MarketMinds</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  if (!t) {
-    t = new Date().getTime();
-    try {
-      m.sessionStorage.setItem('maze-us', t);
-    } catch (err) {}
-  }
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: #f5f5f5;
+    }
 
-  u = document.currentScript || (function () {
-    var w = document.getElementsByTagName('script');
-    return w[w.length - 1];
-  })();
-  v = u && u.nonce;
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
 
-  s = a.createElement('script');
-  s.src = z + '?apiKey=' + e;
-  s.async = true;
-  if (v) s.setAttribute('nonce', v);
-  a.getElementsByTagName('head')[0].appendChild(s);
-  m.mazeUniversalSnippetApiKey = e;
-})(window, document, 'https://snippet.maze.co/maze-universal-loader.js', '347a5974-16de-4e78-9734-5a81fb24dde7');
-</script>
- <script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "w81c9a6smf");
-</script>
-</script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-43HYZ5T4C8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    input, textarea {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+    }
 
-  gtag('config', 'G-43HYZ5T4C8');
-</script>
+    button {
+      padding: 10px 15px;
+      margin: 10px;
+      cursor: pointer;
+    }
 
-	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7375901080347470"
-     crossorigin="anonymous"></script>
-	
-	<title>AI Marketing Copy</title>
-	<link rel="stylesheet" href="index.css">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
-
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
-	<main>
-		<section class="intro">
-			<h1>Market Minds for Dallas 2026</h1>
-			<h2>Get promotional <strong>copy</strong> for your products <strong>fast</strong></h2>
-			<h2>Get <strong> competitors </strong> of your products <strong>in real time</strong></h2>
-			<p>Powered by AI 🤖</p>
-		</section>
-		<section class="ad-input" id="ad-input">
-			<label for="">Product Name</label>
-			<input type="text" placeholder="Water Bottle" id="name">
-			<label for="">Description</label>
-			<textarea placeholder="Extra big water bottle to cope with the Texas heat" id="desc"></textarea>
-			<label for="">Target market</label>
-			<textarea placeholder="College students who go to Southern Methodist University" id="target"></textarea>
-			<button id="advertising-btn">Generate Copy</button>
-			<button id="competitor-btn">Search for Competitors</button>
-		</section> 
-		<section class="ad-output" id="ad-output">
-			<button id="again-btn">Again!</button>
-		</section>
-	</main>
-	<script type="module" src="index.js"></script>
+
+<div class="container">
+
+  <!-- STEP 0: INPUT -->
+  <div id="step-input">
+    <h1>MarketMinds</h1>
+
+    <input id="name" placeholder="Product Name" />
+    <textarea id="desc" placeholder="Product Description"></textarea>
+    <input id="target" placeholder="Target Market" />
+
+    <button id="generate-btn">Generate Ad Copy</button>
+  </div>
+
+  <!-- STEP 1: AD COPY -->
+  <div id="step1" class="hidden">
+    <h2>Your Ad Copy</h2>
+    <p id="ad-text"></p>
+
+    <button id="copy-btn">Copy</button>
+    <br>
+    <button id="to-step2">Next</button>
+  </div>
+
+  <!-- STEP 2: COMPETITORS -->
+  <div id="step2" class="hidden">
+    <h2>Competitor Ideas</h2>
+    <ul id="competitor-list"></ul>
+
+    <button id="back-to-step1">Back</button>
+    <button id="to-step3">Next</button>
+  </div>
+
+  <!-- STEP 3: FINAL -->
+  <div id="step3" class="hidden">
+    <h2>Done</h2>
+
+    <button id="again-btn">Start Over</button>
+  </div>
+
+</div>
+
+<script>
+  // STEP SWITCHING
+  function showStep(stepId) {
+    document.getElementById("step-input").classList.add("hidden");
+    document.getElementById("step1").classList.add("hidden");
+    document.getElementById("step2").classList.add("hidden");
+    document.getElementById("step3").classList.add("hidden");
+
+    document.getElementById(stepId).classList.remove("hidden");
+  }
+
+  // FETCH FUNCTIONS
+  async function fetchReply(productName, productDesc, targetMarket) {
+    const res = await fetch('/.netlify/functions/fetchAI', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productName, productDesc, targetMarket })
+    });
+
+    const data = await res.json();
+    return data.reply;
+  }
+
+  async function fetchCompetitors(productName, productDesc, targetMarket) {
+    const res = await fetch('/.netlify/functions/fetchCompetitors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productName, productDesc, targetMarket })
+    });
+
+    const data = await res.json();
+
+    return data.results
+      .split("\n")
+      .filter(x => x.trim() !== "")
+      .map(x => `<li>${x}</li>`)
+      .join("");
+  }
+
+  // GENERATE BUTTON
+  document.getElementById("generate-btn").addEventListener("click", async () => {
+
+    const name = document.getElementById("name").value;
+    const desc = document.getElementById("desc").value;
+    const target = document.getElementById("target").value;
+
+    if (!name || !desc || !target) {
+      alert("Fill all fields");
+      return;
+    }
+
+    const ad = await fetchReply(name, desc, target);
+    const competitors = await fetchCompetitors(name, desc, target);
+
+    document.getElementById("ad-text").innerText = ad;
+    document.getElementById("competitor-list").innerHTML = competitors;
+
+    showStep("step1");
+  });
+
+  // NAVIGATION
+  document.getElementById("to-step2").onclick = () => showStep("step2");
+  document.getElementById("to-step3").onclick = () => showStep("step3");
+  document.getElementById("back-to-step1").onclick = () => showStep("step1");
+  document.getElementById("again-btn").onclick = () => location.reload();
+
+  // COPY BUTTON
+  document.getElementById("copy-btn").addEventListener("click", () => {
+    const text = document.getElementById("ad-text").innerText;
+    navigator.clipboard.writeText(text);
+    alert("Copied!");
+  });
+
+</script>
+
 </body>
-
 </html>
-
-<!-- Fish flavoured vegan ice cream -->
