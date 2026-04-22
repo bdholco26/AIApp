@@ -93,4 +93,4 @@ advertising copy:`;
   project_name: process.env.LANGSMITH_PROJECT
 });
 
-module.exports = { handler };
+export { handler };
