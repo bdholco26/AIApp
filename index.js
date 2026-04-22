@@ -1,80 +1,22 @@
- 
-document.getElementById("again-btn").addEventListener("click", () => {
-  location.reload();
-    gtag('event', 'again');
-  
-})
+// STEP SWITCHING
+function showStep(stepId) {
+  document.getElementById("step-input").classList.add("hidden");
+  document.getElementById("step1").classList.add("hidden");
+  document.getElementById("step2").classList.add("hidden");
+  document.getElementById("step3").classList.add("hidden");
 
-document.getElementById("advertising-btn").addEventListener("click", async() => {
-
-  gtag('event', 'submit_test', {
-    'hour_of_day': new Date().getHours()
-  });
-
- 
-
-  const productName = document.getElementById("name").value;
-  const productDesc = document.getElementById("desc").value;
-  const productTarget = document.getElementById("target").value;
-
-  gtag('event', 'submit', {
-        'productName': productName
-      });
- 
-  try {
-    const response = await fetchReply(productName, productDesc, productTarget);
-    // Insert the formatted list into ad-output
-    document.getElementById('ad-output').insertAdjacentText('beforeend', response);
-
-   
-
-  // Show thumbs up/down buttons
-        document.getElementById("ad-output").insertAdjacentHTML('beforeend', `
-            <div id="feedback-container" class="rating">
-    <p>Was this result helpful?</p>
-    <div class="like" id="thumbs-up"><span>👍</span></div>
-    <div class="dislike" id="thumbs-down"><span>👎</span></div>
-     </div>
-        `);
-
-        // Add event listeners
-        document.getElementById("thumbs-up").addEventListener("click", () => {
-            document.getElementById("thumbs-up").classList.add("active");
-            document.getElementById("thumbs-down").classList.remove("active");
-            gtag('event', 'feedback', { 'satisfied': 1 });
-            disableFeedback();
-        });
-
-        document.getElementById("thumbs-down").addEventListener("click", () => {
-            document.getElementById("thumbs-down").classList.add("active");
-            document.getElementById("thumbs-up").classList.remove("active");
-            gtag('event', 'feedback', { 'satisfied': 0 });
-            disableFeedback();
-        });
-
-        function disableFeedback() {
-            // Keep the selected color but disable further clicks
-            document.getElementById("thumbs-up").style.pointerEvents = "none";
-            document.getElementById("thumbs-down").style.pointerEvents = "none";
-        }
-    document.getElementById('ad-input').style.display = 'none';
-    document.getElementById('ad-output').style.display = 'block';
-    console.log("FULL PRODUCT RESPONSE:", response);
-} catch (error) {
-    console.error("Error Fetching Products:", error);
-    alert("An error occurred while searching for products.");
+  document.getElementById(stepId).classList.remove("hidden");
 }
-})
 
 
-
+// FETCH AI RESPONSE
 async function fetchReply(productName, productDesc, targetMarket) {
   const url = '/.netlify/functions/fetchAI';
 
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ productName, productDesc, targetMarket })
     });
 
@@ -86,65 +28,105 @@ async function fetchReply(productName, productDesc, targetMarket) {
     }
 
     const data = JSON.parse(text);
-    const cleanText = data.reply.trim();
-    return cleanText;
+    return data.reply;
   } catch (error) {
     console.error("Fetch API Error:", error);
-    alert("An error occurred while fetching the response. Check the console for details.");
+    alert("Error generating ad copy. Check console.");
     throw error;
   }
 }
 
 
-document.getElementById("competitor-btn").addEventListener("click", async () => {
-  const productName = document.getElementById("name").value;
-  const productDesc = document.getElementById("desc").value;
-  const targetMarket = document.getElementById("target").value;
-
-  if (!productName || !productDesc || !targetMarket) {
-      alert("Please fill in all fields.");
-      return;
-  }
-
-  //document.getElementById("product-results").innerHTML = "Searching...";
+// FETCH COMPETITORS
+async function fetchCompetitors(productName, productDesc, targetMarket) {
+  const url = '/.netlify/functions/fetchCompetitors';
 
   try {
-      const response = await fetchCompetitors(productName, productDesc, targetMarket);
-      // Insert the formatted list into ad-output
-      document.getElementById('ad-output').insertAdjacentHTML('beforeend', `<ul>${response}</ul>`);
-      document.getElementById('ad-input').style.display = 'none';
-      document.getElementById('ad-output').style.display = 'block';
-      console.log("FULL PRODUCT RESPONSE:", response);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productName, productDesc, targetMarket })
+    });
+
+    const text = await response.text();
+    console.log("COMPETITOR RESPONSE:", text);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${text}`);
+    }
+
+    const data = JSON.parse(text);
+
+    return data.results
+      .split("\n")
+      .filter(item => item.trim() !== "")
+      .map(item => `<li>${item}</li>`)
+      .join("");
+
   } catch (error) {
-      console.error("Error Fetching Products:", error);
-      alert("An error occurred while searching for products.");
+    console.error("Fetch Competitors Error:", error);
+    alert("Error fetching competitors.");
+    throw error;
+  }
+}
+
+
+// GENERATE BUTTON
+document.getElementById("generate-btn").addEventListener("click", async () => {
+  const name = document.getElementById("name").value;
+  const desc = document.getElementById("desc").value;
+  const target = document.getElementById("target").value;
+
+  if (!name || !desc || !target) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  try {
+    const adCopy = await fetchReply(name, desc, target);
+    const competitors = await fetchCompetitors(name, desc, target);
+
+    // Populate Step 1
+    document.getElementById("ad-text").innerText = adCopy;
+
+    // Save competitors for Step 2
+    window._competitorsHTML = competitors;
+
+    showStep("step1");
+
+  } catch (error) {
+    console.error("Generate Error:", error);
   }
 });
 
 
+// NAVIGATION BUTTONS
+document.getElementById("to-step2").addEventListener("click", () => {
+  document.getElementById("step2").classList.remove("hidden");
+  document.getElementById("step1").classList.add("hidden");
+
+  document.getElementById("competitor-list").innerHTML = window._competitorsHTML;
+});
+
+document.getElementById("to-step3").addEventListener("click", () => {
+  showStep("step3");
+});
+
+document.getElementById("back-to-step1").addEventListener("click", () => {
+  showStep("step1");
+});
 
 
+// COPY BUTTON
+document.getElementById("copy-btn").addEventListener("click", () => {
+  const text = document.getElementById("ad-text").innerText;
+  navigator.clipboard.writeText(text);
 
-async function fetchCompetitors(productName, productDesc, targetMarket ) {
-  const url = '/.netlify/functions/fetchCompetitors';
+  alert("Copied!");
+});
 
-  try {
-      const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productName, productDesc, targetMarket })
-      });
 
-      if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      // Extract and format bullet points
-      const formattedText = data.results.split("\n").filter(item => item.trim() !== "").map(item => `<li>${item.trim()}</li>`).join(""); // Join into a single string
-      return formattedText;
-  } catch (error) {
-      console.error("Fetch Products Error:", error);
-      throw error;
-  }
-}
+// RESET APP
+document.getElementById("again-btn").addEventListener("click", () => {
+  location.reload();
+});
