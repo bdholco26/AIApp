@@ -1,14 +1,10 @@
 import OpenAI from "openai";
-import { traceable } from "langsmith/traceable";
-import { wrapOpenAI } from "langsmith/wrappers";
 
-const openai = wrapOpenAI(
-  new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-  })
-);
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
-const handler = traceable(async (event) => {
+export async function handler(event) {
   try {
     const requestBody = JSON.parse(event.body || "{}");
     const { productName, productDesc, targetMarket } = requestBody;
@@ -78,19 +74,13 @@ advertising copy:`;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        reply: adCopy
-      })
+      body: JSON.stringify({ reply: adCopy })
     };
   } catch (error) {
+    console.error("FETCHAI ERROR:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message || String(error) })
     };
   }
-}, {
-  name: "generateAdCopy",
-  project_name: process.env.LANGSMITH_PROJECT
-});
-
-export { handler };
+}
