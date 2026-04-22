@@ -80,7 +80,7 @@ async function fetchReply(productName, productDesc, targetMarket){
 
       const data = await response.json();
       console.info("API Response:", data); // Log API response
-      const const cleanText = data.reply.trim();
+      const  cleanText = data.reply.trim();
       return cleanText;
  
       
