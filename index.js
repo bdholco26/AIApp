@@ -68,25 +68,30 @@ document.getElementById("advertising-btn").addEventListener("click", async() => 
 
 
 
-async function fetchReply(productName, productDesc, targetMarket){
+async function fetchReply(productName, productDesc, targetMarket) {
   const url = '/.netlify/functions/fetchAI';
 
   try {
-      const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ productName, productDesc, targetMarket })
-      });
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ productName, productDesc, targetMarket })
+    });
 
-      const data = await response.json();
-      console.info("API Response:", data); // Log API response
-      const  cleanText = data.reply.trim();
-      return cleanText;
- 
-      
+    const text = await response.text();
+    console.log("RAW FUNCTION RESPONSE:", text);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${text}`);
+    }
+
+    const data = JSON.parse(text);
+    const cleanText = data.reply.trim();
+    return cleanText;
   } catch (error) {
-      console.error("Fetch API Error:", error); // Log fetch errors
-      alert("An error occurred while fetching the response. Check the console for details.");
+    console.error("Fetch API Error:", error);
+    alert("An error occurred while fetching the response. Check the console for details.");
+    throw error;
   }
 }
 
